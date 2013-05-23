@@ -3,11 +3,9 @@ package repository
 import org.junit.runner.RunWith
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Before
-import org.specs2.mutable.NameSpace
 import org.specs2.mutable.SpecificationWithJUnit
-import org.specs2.runner.JUnitRunner
 import data._
-import org.specs2.Specification
+import org.specs2.runner.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class MapContentRepositorySpec
@@ -55,6 +53,18 @@ class MapContentRepositorySpec
     "return None for unknown url" in new TestContext {
       val nonExistentDataType = ContentCriteria(DataUrl("?", "?"), contentToAdd.dataType)
       repository.getFor(nonExistentDataType) must_== None
+    }
+  }
+
+  "get all" should {
+    "retrieve all the resources" in new TestContext {
+      val moreContentToAdd = Content(dataUrl, "dataType2", "content2")
+      repository.add(moreContentToAdd)
+      val differentUrlContent = Content(DataUrl("new path", "?"), "dataType", "content")
+      repository.add(differentUrlContent)
+
+      repository.getAll.toSet must_== Set(Resource(dataUrl, List(contentToAdd.dataType, moreContentToAdd.dataType)),
+        Resource(differentUrlContent.dataUrl, List(differentUrlContent.dataType)))
     }
   }
 }

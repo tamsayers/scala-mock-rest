@@ -9,6 +9,7 @@ trait ContentRepositoryComponent {
   trait ContentRepository {
     def add(content: Content)
     def getFor(criteria: ContentCriteria): Option[String]
+    def getAll: List[Resource]
   }
 
   class MapContentRepository extends ContentRepository {
@@ -27,5 +28,10 @@ trait ContentRepositoryComponent {
         case None => None
       }
     }
+
+    def getAll: List[Resource] = dataStore.map({ entry =>
+      val (dataUrl, contents) = entry
+      Resource(dataUrl, contents.values.toList)
+    }).toList
   }
 }
