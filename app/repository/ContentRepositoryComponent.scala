@@ -31,7 +31,7 @@ trait ContentRepositoryComponent {
 
     def getAll: List[Resource] = dataStore.map({ entry =>
       val (dataUrl, contents) = entry
-      Resource(dataUrl, contents.values.toList)
+      Resource(dataUrl, contents.keys.toList)
     }).toList
   }
 }

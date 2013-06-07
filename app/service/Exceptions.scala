@@ -1,0 +1,3 @@
+package service
+
+class ContentNotFoundException extends Exception
