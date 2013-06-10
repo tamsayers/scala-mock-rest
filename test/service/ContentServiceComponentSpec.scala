@@ -10,6 +10,7 @@ import repository.ContentRepositoryComponent
 import data.ContentCriteria
 import org.specs2.mutable.Before
 import org.specs2.specification.Scope
+import data.Resource
 
 @RunWith(classOf[JUnitRunner])
 class ContentServiceComponentSpec
@@ -64,6 +65,16 @@ class ContentServiceComponentSpec
       val criteria = ContentCriteria(dataUrl, "dataType")
 
       contentService.getFor(criteria) must throwA[ContentNotFoundException]
+    }
+  }
+
+  "get all" should {
+    "return the list of resources" in new TestContext {
+      val allContent = List(Resource(dataUrl, List("")))
+
+      contentRepository.getAll returns allContent
+
+      contentService.getAll must_== allContent
     }
   }
 }

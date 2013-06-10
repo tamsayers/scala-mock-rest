@@ -2,10 +2,11 @@ package controllers
 
 import play.api._
 import play.api.mvc._
+import service.ContentServiceComponent
+import repository.ContentRepositoryComponent
 
-object Application extends Controller {
-  
-  def index = Action {
-    Ok(views.html.index("Your new application is ready."))
-  }
-}
+object Application extends ApplicationController
+
+object Contents extends ContentController
+  with ContentServiceComponent
+  with ContentRepositoryComponent

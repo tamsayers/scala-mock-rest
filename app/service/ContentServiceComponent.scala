@@ -3,6 +3,7 @@ package service
 import data.Content
 import repository.ContentRepositoryComponent
 import data.ContentCriteria
+import data.Resource
 
 trait ContentServiceComponent {
   self: ContentRepositoryComponent =>
@@ -20,5 +21,7 @@ trait ContentServiceComponent {
         case _ => throw new ContentNotFoundException
       }
     }
+
+    def getAll: List[Resource] = contentRepository.getAll
   }
 }

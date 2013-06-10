@@ -24,4 +24,10 @@ class DataSpec extends SpecificationWithJUnit
       criteria.discreteTypes must_== List(criteria)
     }
   }
+
+  "data url" should {
+    "give a the string representation of the data" in {
+      DataUrl("url", "queryString").toString mustEqual "url?queryString"
+    }
+  }
 }
