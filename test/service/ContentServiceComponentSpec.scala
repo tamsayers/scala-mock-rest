@@ -5,21 +5,21 @@ import org.specs2.mock.Mockito
 import org.specs2.mutable.SpecificationWithJUnit
 import org.specs2.runner.JUnitRunner
 import data.Content
-import data.DataUrl
 import repository.ContentRepositoryComponent
 import data.ContentCriteria
 import org.specs2.mutable.Before
 import org.specs2.specification.Scope
 import data.Resource
+import data.TypedContent
 
 @RunWith(classOf[JUnitRunner])
 class ContentServiceComponentSpec
     extends SpecificationWithJUnit
     with Mockito {
 
-  val dataUrl = DataUrl("path", "query=string")
-  val data = "content"
-  val contentToAdd = Content(dataUrl, "dataType", data)
+  val uri = "/path?query=string"
+  val data = Some("content")
+  val contentToAdd = Content(uri, "dataType", data.get)
 
   trait TestContext extends Scope
       with ContentServiceComponent
@@ -38,31 +38,31 @@ class ContentServiceComponentSpec
 
   "get for criteria" should {
     "get the content for the given criteria" in new TestContext {
-      val criteria = ContentCriteria(dataUrl, "dataType")
-      contentRepository.getFor(criteria) returns Option(data)
+      val criteria = ContentCriteria(uri, "dataType")
+      contentRepository.getFor(criteria) returns data
 
-      contentService.getFor(criteria) must_== data
+      contentService.getFor(criteria) must_== TypedContent("dataType", data)
     }
 
     "get the content for one of the specified data types" in new TestContext {
-      val criteria = ContentCriteria(dataUrl, "dataType1,dataType2")
+      val criteria = ContentCriteria(uri, "dataType1,dataType2")
 
-      contentRepository.getFor(ContentCriteria(dataUrl, "dataType2")) returns Option(data)
+      contentRepository.getFor(ContentCriteria(uri, "dataType2")) returns data
 
-      contentService.getFor(criteria) must_== data
+      contentService.getFor(criteria) must_== TypedContent("dataType2", data)
     }
 
     "once content is found for a type no other repository calls should be made" in new TestContext {
-      val criteria = ContentCriteria(dataUrl, "dataType1,dataType2,dataType3")
+      val criteria = ContentCriteria(uri, "dataType1,dataType2,dataType3")
 
-      contentRepository.getFor(ContentCriteria(dataUrl, "dataType2")) returns Option(data)
+      contentRepository.getFor(ContentCriteria(uri, "dataType2")) returns data
 
-      contentService.getFor(criteria) must_== data
-      there was no(contentRepository).getFor(ContentCriteria(dataUrl, "dataType3"))
+      contentService.getFor(criteria) must_== TypedContent("dataType2", data)
+      there was no(contentRepository).getFor(ContentCriteria(uri, "dataType3"))
     }
 
     "if no content is found a ContentNotFoundException should be thrown" in new TestContext {
-      val criteria = ContentCriteria(dataUrl, "dataType")
+      val criteria = ContentCriteria(uri, "dataType")
 
       contentService.getFor(criteria) must throwA[ContentNotFoundException]
     }
@@ -70,7 +70,7 @@ class ContentServiceComponentSpec
 
   "get all" should {
     "return the list of resources" in new TestContext {
-      val allContent = List(Resource(dataUrl, List("")))
+      val allContent = List(Resource(uri, List("")))
 
       contentRepository.getAll returns allContent
 

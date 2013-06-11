@@ -4,6 +4,7 @@ import data.Content
 import repository.ContentRepositoryComponent
 import data.ContentCriteria
 import data.Resource
+import data.TypedContent
 
 trait ContentServiceComponent {
   self: ContentRepositoryComponent =>
@@ -13,11 +14,11 @@ trait ContentServiceComponent {
   class ContentService {
     def add(content: Content) = contentRepository.add(content)
 
-    def getFor(criteria: ContentCriteria): String = {
-      val contentsStream = criteria.discreteTypes.toStream.map(contentRepository.getFor(_))
+    def getFor(criteria: ContentCriteria): TypedContent = {
+      val contentsStream = criteria.discreteTypes.toStream.map(content => TypedContent(content.acceptType, contentRepository.getFor(content)))
 
-      contentsStream.collectFirst { case Some(i) => i } match {
-        case Some(content) => content
+      contentsStream.collectFirst { case TypedContent(acceptType, Some(data)) => (acceptType, data) } match {
+        case Some(i) => TypedContent(i._1, Some(i._2))
         case _ => throw new ContentNotFoundException
       }
     }

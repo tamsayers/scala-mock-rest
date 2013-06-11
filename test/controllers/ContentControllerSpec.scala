@@ -9,21 +9,18 @@ import org.specs2.mock.Mockito
 import org.specs2.specification.Scope
 import play.api.test._
 import play.api.test.Helpers._
-import data.DataUrl
-import data.Resource
-import data.Content
-import org.junit.Ignore
+import data._
 
 @RunWith(classOf[JUnitRunner])
-class ContentSpec extends SpecificationWithJUnit with Mockito {
-  val dataUrl = DataUrl("http://url.com", "param=value")
-
+class ContentControllerSpec extends SpecificationWithJUnit with Mockito {
   trait TestContext extends Scope
       with ContentController
       with ContentServiceComponent
       with ContentRepositoryComponent {
 
     override val contentService = mock[ContentService]
+
+    val body = "request body"
   }
 
   "list" should {
@@ -37,21 +34,36 @@ class ContentSpec extends SpecificationWithJUnit with Mockito {
 
     "return the list of resources as JSON" in new TestContext {
       val types = List("text/xml", "application/json")
-      contentService.getAll returns List(Resource(dataUrl, types))
+      contentService.getAll returns List(Resource("/url.com?param=value", types))
 
       val result = list(FakeRequest())
 
-      contentAsString(result) mustEqual """[{"url":"http://url.com?param=value","types":["text/xml","application/json"]}]"""
+      contentAsString(result) mustEqual """[{"uri":"/url.com?param=value","types":["text/xml","application/json"]}]"""
     }
   }
 
   "add" should {
-    val request = FakeRequest("PUT", "", FakeHeaders(List(("Content-Type", List("text/xml")))), "request body")
-    "add the request body content" in new TestContext {
 
-      add(request)
+    "populate the request body content and type" in new TestContext {
+      add(FakeRequest().withTextBody(body).withHeaders(("Content-Type", "text/xml")))
 
-      there was one(contentService).add(Content(DataUrl("", null), "", "request body"))
-    }.pendingUntilFixed("work out how to pass in populated request")
+      there was one(contentService).add(Content("/", "text/xml", body))
+    }
+    "add the request path and query string to the url" in new TestContext {
+      add(FakeRequest("POST", "/uri?param=value").withTextBody(body).withHeaders(("Content-Type", "text/xml")))
+
+      there was one(contentService).add(Content("/uri?param=value", "text/xml", body))
+    }
+  }
+
+  "get" should {
+    "retrieve the content for the given accept type" in new TestContext {
+      contentService.getFor(ContentCriteria("/uri?param=value", "text/xml")) returns TypedContent("text/xml", Some(body))
+
+      val result = get(FakeRequest("GET", "/uri?param=value").withHeaders(("Accept", "text/xml")))
+
+      contentAsString(result) mustEqual body
+      contentType(result) must beSome("text/xml")
+    }
   }
 }

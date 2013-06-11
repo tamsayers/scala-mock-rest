@@ -1,14 +1,9 @@
 package data
-
-case class DataUrl(path: String, queryString: String) {
-  override def toString = path + (if (Option(queryString).isDefined) "?" + queryString)
-}
-
-case class ContentCriteria(dataUrl: DataUrl, dataType: String) {
+case class ContentCriteria(uri: String, acceptType: String) {
   def discreteTypes: List[ContentCriteria] =
-    dataType.split(",").map(ContentCriteria(dataUrl, _)).toList
+    acceptType.split(",").map(ContentCriteria(uri, _)).toList
 }
-case class Content(dataUrl: DataUrl, dataType: String, content: String)
+case class Content(uri: String, dataType: String, content: String)
 
-case class TypedContent(dataType: String, content: Option[String])
-case class Resource(dataUrl: DataUrl, types: List[String])
+case class TypedContent(dataType: String, data: Option[String])
+case class Resource(uri: String, types: List[String])

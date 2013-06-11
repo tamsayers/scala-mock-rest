@@ -14,7 +14,7 @@ trait ContentController extends Controller {
 
   implicit val resourceWrites = new Writes[Resource] {
     def writes(resource: Resource): JsValue = {
-      Json.obj("url" -> resource.dataUrl.toString,
+      Json.obj("uri" -> resource.uri,
         "types" -> resource.types)
     }
   }
@@ -25,10 +25,18 @@ trait ContentController extends Controller {
   }
 
   def add = Action { request =>
-    val content = Content(DataUrl(request.uri, request.queryString.mkString("", "=", "&")), request.contentType.get, request.body.asText.get)
+    val content = Content(request.uri, request.contentType.get, request.body.asText.get)
 
     contentService.add(content)
 
     Ok
+  }
+
+  def get = Action { request =>
+    val criteria = ContentCriteria(request.uri, request.accept.mkString(","))
+    val content = contentService.getFor(criteria)
+
+    Ok(content.data.get).withHeaders(
+      CONTENT_TYPE -> content.dataType)
   }
 }
