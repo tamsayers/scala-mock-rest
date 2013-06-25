@@ -13,7 +13,7 @@ class MapContentRepositorySpec
     with Mockito
     with ContentRepositoryComponent {
 
-  val uri = "path?query=string"
+  val uri = DataUrl("path", "query=string")
   val contentToAdd = Content(uri, "dataType", "content")
 
   trait TestContext extends Before {
@@ -51,7 +51,7 @@ class MapContentRepositorySpec
     }
 
     "return None for unknown url" in new TestContext {
-      val nonExistentDataType = ContentCriteria("?", contentToAdd.dataType)
+      val nonExistentDataType = ContentCriteria(DataUrl("", ""), contentToAdd.dataType)
       repository.getFor(nonExistentDataType) must_== None
     }
   }
@@ -60,11 +60,11 @@ class MapContentRepositorySpec
     "retrieve all the resources" in new TestContext {
       val moreContentToAdd = Content(uri, "dataType2", "content2")
       repository.add(moreContentToAdd)
-      val differentUrlContent = Content("new path", "dataType", "content")
+      val differentUrlContent = Content(DataUrl("new path", ""), "dataType", "content")
       repository.add(differentUrlContent)
 
       repository.getAll.toSet must_== Set(Resource(uri, List(contentToAdd.dataType, moreContentToAdd.dataType)),
-        Resource(differentUrlContent.uri, List(differentUrlContent.dataType)))
+        Resource(differentUrlContent.dataUrl, List(differentUrlContent.dataType)))
     }
   }
 }

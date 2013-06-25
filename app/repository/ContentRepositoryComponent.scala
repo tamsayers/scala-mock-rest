@@ -13,25 +13,25 @@ trait ContentRepositoryComponent {
   }
 
   class MapContentRepository extends ContentRepository {
-    private val dataStore = new HashMap[String, Map[String, String]] with SynchronizedMap[String, Map[String, String]]
+    private val dataStore = new HashMap[DataUrl, Map[String, String]] with SynchronizedMap[DataUrl, Map[String, String]]
 
-    def data: Map[String, Map[String, String]] = dataStore.toMap
+    def data: Map[DataUrl, Map[String, String]] = dataStore.toMap
 
     def add(content: Content) = {
-      val urlContent = if (dataStore.contains(content.uri)) dataStore.get(content.uri).get else Map()
-      dataStore += (content.uri -> (urlContent ++ Map(content.dataType -> content.content)))
+      val urlContent = if (dataStore.contains(content.dataUrl)) dataStore.get(content.dataUrl).get else Map()
+      dataStore += (content.dataUrl -> (urlContent ++ Map(content.dataType -> content.content)))
     }
 
     def getFor(criteria: ContentCriteria): Option[String] = {
-      dataStore.get(criteria.uri) match {
+      dataStore.get(criteria.dataUrl) match {
         case Some(data) => data.get(criteria.acceptType)
         case None => None
       }
     }
 
     def getAll: List[Resource] = dataStore.map({ entry =>
-      val (uri, contents) = entry
-      Resource(uri, contents.keys.toList)
+      val (dataUrl, contents) = entry
+      Resource(dataUrl, contents.keys.toList)
     }).toList
   }
 }

@@ -34,7 +34,7 @@ class ContentControllerSpec extends SpecificationWithJUnit with Mockito {
 
     "return the list of resources as JSON" in new TestContext {
       val types = List("text/xml", "application/json")
-      contentService.getAll returns List(Resource("/url.com?param=value", types))
+      contentService.getAll returns List(Resource(DataUrl("/url.com", "param=value"), types))
 
       val result = list(FakeRequest())
 
@@ -43,24 +43,26 @@ class ContentControllerSpec extends SpecificationWithJUnit with Mockito {
   }
 
   "add" should {
+    val resource = new DataUrl("/resource", "")
 
     "populate the request body content and type" in new TestContext {
-      add(FakeRequest().withTextBody(body).withHeaders(("Content-Type", "text/xml")))
 
-      there was one(contentService).add(Content("/", "text/xml", body))
+      add(resource.resource)(FakeRequest().withTextBody(body).withHeaders(("Content-Type", "text/xml")))
+
+      there was one(contentService).add(Content(resource, "text/xml", body))
     }
     "add the request path and query string to the url" in new TestContext {
-      add(FakeRequest("POST", "/uri?param=value").withTextBody(body).withHeaders(("Content-Type", "text/xml")))
+      add(resource.resource)(FakeRequest().withTextBody(body).withHeaders(("Content-Type", "text/xml")))
 
-      there was one(contentService).add(Content("/uri?param=value", "text/xml", body))
+      there was one(contentService).add(Content(resource, "text/xml", body))
     }
   }
 
   "get" should {
     "retrieve the content for the given accept type" in new TestContext {
-      contentService.getFor(ContentCriteria("/uri?param=value", "text/xml")) returns TypedContent("text/xml", Some(body))
+      contentService.getFor(ContentCriteria(DataUrl("/uri", "param=value"), "text/xml")) returns TypedContent("text/xml", Some(body))
 
-      val result = get(FakeRequest("GET", "/uri?param=value").withHeaders(("Accept", "text/xml")))
+      val result = get("/uri")(FakeRequest("GET", "/uri?param=value").withHeaders(("Accept", "text/xml")))
 
       contentAsString(result) mustEqual body
       contentType(result) must beSome("text/xml")

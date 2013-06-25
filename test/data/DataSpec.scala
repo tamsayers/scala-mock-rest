@@ -8,7 +8,7 @@ import org.specs2.mock.Mockito
 @RunWith(classOf[JUnitRunner])
 class DataSpec extends SpecificationWithJUnit with Mockito {
 
-  val uri = "/uri"
+  val uri = DataUrl("/uri", "")
 
   "content criteria" should {
     "return a list of criteria for the discrete data types" in {
@@ -21,6 +21,15 @@ class DataSpec extends SpecificationWithJUnit with Mockito {
       val criteria = ContentCriteria(uri, "type1")
 
       criteria.discreteTypes must_== List(criteria)
+    }
+  }
+
+  "data url" should {
+    "give its representation as a url" in {
+      DataUrl("/path", "").toString mustEqual "/path"
+    }
+    "give its representation as a url with query string" in {
+      DataUrl("/path", "param=value").toString mustEqual "/path?param=value"
     }
   }
 }

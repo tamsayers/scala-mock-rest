@@ -11,13 +11,14 @@ import org.specs2.mutable.Before
 import org.specs2.specification.Scope
 import data.Resource
 import data.TypedContent
+import data.DataUrl
 
 @RunWith(classOf[JUnitRunner])
 class ContentServiceComponentSpec
     extends SpecificationWithJUnit
     with Mockito {
 
-  val uri = "/path?query=string"
+  val uri = DataUrl("/path", "query=string")
   val data = Some("content")
   val contentToAdd = Content(uri, "dataType", data.get)
 
